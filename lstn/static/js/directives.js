@@ -47,8 +47,6 @@ angular.module('lstn.directives', [])
         $scope.messageCount = $scope.chat.messages.length;
 
         var setMessageCount = function(newVal, oldVal) {
-          console.log('showMessageCount', newVal, oldVal);
-
           if (newVal === oldVal) {
             return;
           }
@@ -421,8 +419,8 @@ angular.module('lstn.directives', [])
   }
 ])
 
-.directive('lstnTrack', ['Queue', 'Favorite', 'CurrentRoom',
-  function(Queue, Favorite, CurrentRoom) {
+.directive('lstnTrack', ['Queue', 'Favorite', 'CurrentRoom', 'Preview',
+  function(Queue, Favorite, CurrentRoom, Preview) {
     return {
       restrict: 'E',
       replace: true,
@@ -480,6 +478,11 @@ angular.module('lstn.directives', [])
           }
 
           $scope.status.open = !$scope.status.open;
+        };
+
+        $scope.preview = function() {
+          console.log('preview', $scope.track.sampleUrl);
+          Preview.play($scope.track.sampleUrl);
         };
 
         // Handle the destroy event
