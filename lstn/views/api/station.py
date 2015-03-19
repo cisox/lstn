@@ -22,7 +22,7 @@ def get_tracks(station_id):
   data = {
     'method': 'generateStation',
     'station_key': station_id,
-    'extras': 'trackKeys,streamRegions',
+    'extras': 'trackKeys,streamRegions,sampleUrl',
   }
 
   try:
@@ -40,7 +40,7 @@ def get_tracks(station_id):
   tracks = []
   if track_keys:
     try:
-      tracks = rdio_manager.get(track_keys, ['radioKey', 'streamRegions'])
+      tracks = rdio_manager.get(track_keys, ['radioKey', 'streamRegions', 'sampleUrl'])
     except Exception as e:
       current_app.logger.debug(e)
       raise APIException('Unable to retrieve station tracks: %s' % str(e))
