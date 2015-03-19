@@ -1,8 +1,13 @@
 <div id="track-{{ $id }}" class="drilldown__item track">
   <div class="item__image">
     <img data-ng-src="{{ track.icon }}" alt="{{ track.album }}">
-    <div class="item__image__overlay" data-ng-if="favorites.bitset[track.key]"></div>
-    <i class="fa fa-heart item__image__overlay__icon item__image__overlay__icon--favorite" data-ng-if="favorites.bitset[track.key]"></i>
+    <div class="item__image__overlay">
+      <span class="fa fa-stack item__image__overlay__icon item__image__overlay__icon--preview" data-ng-click="preview()" data-ng-if="track.canSample"></i>
+        <i class="fa fa-circle fa-stack-1x"></i>
+        <i class="fa fa-play-circle fa-stack-1x"></i>
+      </span>
+      <i class="fa fa-heart item__image__overlay__icon item__image__overlay__icon--favorite" data-ng-if="favorites.bitset[track.key]"></i>
+    </div>
   </div>
   <div class="item__info">
     <div
