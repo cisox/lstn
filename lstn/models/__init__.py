@@ -146,7 +146,7 @@ class User(db.Model, ModelMixin, UserMixin):
       return []
 
     try:
-      tracks = rdio_manager.get(playlist.track_keys, ['radioKey', 'streamRegions'])
+      tracks = rdio_manager.get(playlist.track_keys, ['radioKey', 'streamRegions', 'sampleUrl'])
     except Exception as e:
       current_app.logger.debug(e)
       raise APIException('Unable to retrieve your queue: %s' % str(e))
@@ -199,7 +199,7 @@ class User(db.Model, ModelMixin, UserMixin):
       return []
 
     try:
-      response = rdio_manager.get(keys, ['radioKey', 'streamRegions', 'albumCount'])
+      response = rdio_manager.get(keys, ['radioKey', 'streamRegions', 'albumCount', 'sampleUrl'])
     except Exception as e:
       current_app.logger.debug(e)
       raise APIException('Unable to retrieve favorites: %s' % str(e))
