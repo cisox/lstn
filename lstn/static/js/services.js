@@ -399,6 +399,70 @@ angular.module('lstn.services', ['mm.emoji.util', 'ngResource'])
   }
 ])
 
+.factory('Preview', [
+  function() {
+    var Preview = {
+      enabled: false,
+      context: null
+    };
+
+    Preview.init = function() {
+      try {
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        Preview.context = new AudioContext();
+
+        Preview.enabled = true;
+      } catch(e) {
+        Preview.enabled = false;
+      }
+    };
+
+    Preview.play = function(url) {
+      console.log('Preview.play', url, Preview);
+      if (!url || !Preview.enabled || !Preview.context) {
+        return;
+      }
+
+      console.log('ready to play');
+
+      // Stop the current sound
+      if (Preview.source) {
+        console.log('has source');
+        if (!Preview.source.stop) {
+          Preview.source.noteOff(0);
+        } else {
+          Preview.source.stop(0);
+        }
+      }
+
+      // Fetch the current sound
+      var request = new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.responseType = 'arraybuffer';
+
+      request.onload = function() {
+        // Decode the audio data
+        Preview.context.decodeAudioData(request.response, function(buffer) {
+          // Setup the sound source
+          Preview.source = Preview.context.createBufferSource();
+          Preview.source.buffer = buffer;
+          Preview.source.connect(context.destination);
+
+          if (!Preview.source.start) {
+            Preview.source.noteOn(0);
+          } else {
+            Preview.source.start(0);
+          }
+        });
+      };
+
+      request.send();
+    };
+
+    return Preview;
+  }
+])
+
 .factory('socket', ['config', 'socketFactory', 'emojiToUnicodeFilter', function(config, socketFactory, emojiToUnicodeFilter) {
   var ioSocket = io.connect(config.WS_URL);
   var socket = socketFactory({
