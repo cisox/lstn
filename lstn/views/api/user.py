@@ -360,7 +360,7 @@ def search():
     'method': 'search',
     'query': query,
     'types': 'track,artist,album',
-    'extras': 'albumCount,streamRegions,radioKey',
+    'extras': 'albumCount,streamRegions,radioKey,sampleUrl',
   }
 
   try:
