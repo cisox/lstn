@@ -132,11 +132,12 @@ angular.module('lstn.controllers', [])
   };
 }])
 
-.controller('RoomController', ['$scope', '$routeParams', '$timeout', '$log', 'socket', 'Promise', 'Rdio', 'CurrentRoom', 'Room', 'CurrentUser', 'User', 'Queue', 'Favorite', 'Alert', 'screenSize', '$localStorage', '$sessionStorage',
-  function($scope, $routeParams, $timeout, $log, socket, Promise, Rdio, CurrentRoom, Room, CurrentUser, User, Queue, Favorite, Alert, screenSize, $localStorage, $sessionStorage) {
+.controller('RoomController', ['$scope', '$routeParams', '$timeout', '$log', 'socket', 'Promise', 'Rdio', 'CurrentRoom', 'Room', 'CurrentUser', 'User', 'Queue', 'Favorite', 'Alert', 'screenSize', '$localStorage', '$sessionStorage', 'Preview',
+  function($scope, $routeParams, $timeout, $log, socket, Promise, Rdio, CurrentRoom, Room, CurrentUser, User, Queue, Favorite, Alert, screenSize, $localStorage, $sessionStorage, Preview) {
     var promises = {};
     var timeouts = {};
 
+    // Setup Emoticons
     var setEmoticons = function(newVal, oldVal) {
       if (newVal === oldVal) {
         return;
@@ -158,6 +159,7 @@ angular.module('lstn.controllers', [])
 
     setEmoticons(emoticons, 'keep');
 
+    // Setup Tabs
     $scope.tabs = {
       queue: true,
       music: false
@@ -171,21 +173,26 @@ angular.module('lstn.controllers', [])
       $scope.tabs[tab] = true;
     };
 
+    // Setup Controller Status
     $scope.isController = false;
     $scope.isCurrentController = false;
     $scope.currentController = null;
 
     $scope.voting = false;
 
+    // Setup Chat
     $scope.chat = {
       loading: true,
       messages: []
     };
 
+    // Setup Services
     $scope.queue = Queue;
     $scope.room = CurrentRoom;
     $scope.favorites = Favorite;
     $scope.rdio = Rdio;
+    
+    Preview.init();
 
     // Screen size
     $scope.desktop = screenSize.on('md, lg', function(match) {
