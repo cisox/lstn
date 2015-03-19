@@ -615,8 +615,13 @@ angular.module('lstn.templates', []).run(['$templateCache', function($templateCa
     "<div id=\"track-{{ $id }}\" class=\"drilldown__item track\">\n" +
     "  <div class=\"item__image\">\n" +
     "    <img data-ng-src=\"{{ track.icon }}\" alt=\"{{ track.album }}\">\n" +
-    "    <div class=\"item__image__overlay\" data-ng-if=\"favorites.bitset[track.key]\"></div>\n" +
-    "    <i class=\"fa fa-heart item__image__overlay__icon item__image__overlay__icon--favorite\" data-ng-if=\"favorites.bitset[track.key]\"></i>\n" +
+    "    <div class=\"item__image__overlay\">\n" +
+    "      <span class=\"fa fa-stack item__image__overlay__icon item__image__overlay__icon--preview\" data-ng-click=\"preview()\" data-ng-if=\"track.canSample\"></i>\n" +
+    "        <i class=\"fa fa-circle fa-stack-1x\"></i>\n" +
+    "        <i class=\"fa fa-play-circle fa-stack-1x\"></i>\n" +
+    "      </span>\n" +
+    "      <i class=\"fa fa-heart item__image__overlay__icon item__image__overlay__icon--favorite\" data-ng-if=\"favorites.bitset[track.key]\"></i>\n" +
+    "    </div>\n" +
     "  </div>\n" +
     "  <div class=\"item__info\">\n" +
     "    <div\n" +
