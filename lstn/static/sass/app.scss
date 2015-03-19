@@ -910,6 +910,33 @@ div.progress-bar-info {
   .item__image__overlay__icon--playing {
     color: $blue;
   }
+
+  .item__image__overlay__icon--preview {
+    display: none;
+    color: $blue;
+  }
+
+  &:hover {
+    .item__image__overlay {
+      background-color: transparent;
+      @include opacity(1);
+
+      .item__image__overlay__icon--preview ~ .item__image__overlay__icon--favorite {
+        color: black;
+        display: none;
+      }
+
+      .item__image__overlay__icon--preview {
+        display: inline-block;
+        @include opacity(1);
+        cursor: pointer;
+
+        .fa-circle {
+          color: white;
+        }
+      }
+    }
+  }
 }
 
 .item__info {
