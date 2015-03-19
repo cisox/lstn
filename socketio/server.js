@@ -391,8 +391,9 @@ Lstn.prototype.sendChatMessage = function(message) {
 
   chatHistory[this.roomId].unshift(message);
 
-  if (chatHistory[this.roomId].length > 250) {
-    chatHistory[this.roomId].splice(0, chatHistory[this.roomId].length - 250);
+  var length = chatHistory[this.roomId].length;
+  if (length > 250) {
+    chatHistory[this.roomId].splice(length, length - 250);
   }
 };
 
