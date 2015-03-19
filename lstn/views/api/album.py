@@ -20,7 +20,7 @@ def get_collection_tracks(album_id):
     current_user.oauth_token_secret)
 
   try:
-    response = rdio_manager.get_tracks_for_album_in_collection(album_id, current_user.external_id, ['radioKey', 'streamRegions'])
+    response = rdio_manager.get_tracks_for_album_in_collection(album_id, current_user.external_id, ['radioKey', 'streamRegions', 'sampleUrl'])
   except Exception as e:
     current_app.logger.debug(e)
     raise APIException('Unable to retrieve tracks: %s' % str(e))
@@ -48,7 +48,7 @@ def get_tracks(album_id):
   if len(albums) > 0:
     if hasattr(albums[0], 'track_keys') and len(albums[0].track_keys) > 0:
       try:
-        response = rdio_manager.get(albums[0].track_keys, ['radioKey', 'streamRegions'])
+        response = rdio_manager.get(albums[0].track_keys, ['radioKey', 'streamRegions', 'sampleUrl'])
       except Exception as e:
         current_app.logger.debug(e)
         raise APIException('Unable to retrieve album tracks: %s' % str(e))
