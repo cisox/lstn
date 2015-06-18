@@ -391,10 +391,13 @@ Lstn.prototype.sendChatMessage = function(message) {
 
   chatHistory[this.roomId].unshift(message);
 
+  /*
+  var limit = 500;
   var length = chatHistory[this.roomId].length;
-  if (length > 250) {
-    chatHistory[this.roomId].splice(length, length - 250);
+  if (length > limit) {
+    chatHistory[this.roomId].splice(limit - 1, length - limit);
   }
+  */
 };
 
 Lstn.prototype.addConnection = function() {
@@ -818,7 +821,6 @@ Lstn.prototype.onChatMessage = function(message) {
     var mentionedNames = {};
 
     mentioned.forEach(function(value) {
-      console.log(value);
       mentionedNames[value.toLowerCase().substring(1)] = 1;
     }, this);
 
