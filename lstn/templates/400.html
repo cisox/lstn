@@ -1,0 +1,9 @@
+<% extends "layout.html" %>
+<% block title %>Bad Request<% endblock %>
+<% block body %>
+<h1>Bad Request</h1>
+<h2>:( <a href="%% url_for('site.index') %%">Lstn again</a>.</h2>
+<% if message %>
+<h3 class="error-message text-danger">%% message %%</h3>
+<% endif %>
+<% endblock %>
