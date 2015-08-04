@@ -85,6 +85,7 @@ class User(db.Model, ModelMixin, UserMixin):
   picture = db.Column(db.String(32))
   points = db.Column(db.BigInteger)
   region = db.Column(db.String(3))
+  settings = db.Column(MutableDict.as_mutable(JSONEncodedDict))
   created_at = db.Column(db.DateTime, nullable=False, default=db.func.now())
 
   owned = db.relationship('Room', backref='owner')
