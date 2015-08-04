@@ -1,5 +1,5 @@
 import simplejson as json
-import rdio
+import lstn.rdio as rdio
 
 from flask import Flask, request, redirect, url_for, \
   render_template, Blueprint, current_app, jsonify
@@ -14,10 +14,7 @@ station = Blueprint('station', __name__, url_prefix='/api/station')
 @station.route('/<station_id>/tracks', methods=['GET'])
 @login_required
 def get_tracks(station_id):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   data = {
     'method': 'generateStation',

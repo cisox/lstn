@@ -1,6 +1,6 @@
 import string
 import simplejson as json
-import rdio
+import lstn.rdio as rdio
 
 from flask import Flask, request, redirect, url_for, \
   render_template, Blueprint, current_app, jsonify
@@ -78,10 +78,7 @@ def room_id_action(room_id):
   if not room:
     raise APIException('Room not found', 404)
 
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   hostname = request.headers['Host']
   if ':' in hostname:

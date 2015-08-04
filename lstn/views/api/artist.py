@@ -1,5 +1,5 @@
 import simplejson as json
-import rdio
+import lstn.rdio as rdio
 
 from flask import Flask, request, redirect, url_for, \
   render_template, Blueprint, current_app, jsonify
@@ -14,10 +14,7 @@ artist = Blueprint('artist', __name__, url_prefix='/api/artist')
 @artist.route('/<artist_id>/albums/collection', methods=['GET'])
 @login_required
 def get_collection_albums(artist_id):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   data = {
     'method': 'getAlbumsForArtistInCollection',
@@ -36,10 +33,7 @@ def get_collection_albums(artist_id):
 @artist.route('/<artist_id>/albums', methods=['GET'])
 @login_required
 def get_albums(artist_id):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   try:
     response = rdio_manager.get_albums_for_artist(artist_id, False, ['radioKey'])
