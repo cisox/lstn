@@ -20,7 +20,7 @@ site = Blueprint('site', __name__)
 
 @site.route('/login')
 def login():
-  csrf_token = b64encode(os.urandom(24))
+  csrf_token = b64encode(os.urandom(24), '-_').decode('utf-8')
   session['csrf_token'] = csrf_token
 
   rdio_manager = rdio.Api(current_app.config['RDIO_CLIENT_ID'],
