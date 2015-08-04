@@ -1,6 +1,6 @@
 import datetime
 import simplejson as json
-import rdio
+import lstn.rdio as rdio
 import time
 import re
 
@@ -10,6 +10,7 @@ from lstn.exceptions import APIException
 from flask import current_app
 from flask.ext.login import UserMixin, current_user
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.types import TypeDecorator, TEXT
 from slugify import slugify
 
@@ -51,6 +52,25 @@ class JSONEncodedDict(TypeDecorator):
       value = json.loads(value)
     return value
 
+class MutableDict(Mutable, dict):
+  @classmethod
+  def coerce(cls, key, value):
+    if not isinstance(value, MutableDict):
+      if isinstance(value, dict):
+        return MutableDict(value)
+
+      return Mutable.coerce(key, value)
+    else:
+      return value
+
+  def __setitem__(self, key, value):
+    dict.__setitem__(self, key, value)
+    self.changed()
+
+  def __delitem__(self, key):
+    dict.__delitem__(self, key)
+    self.changed()
+
 Base = declarative_base()
 
 class User(db.Model, ModelMixin, UserMixin):
@@ -60,13 +80,11 @@ class User(db.Model, ModelMixin, UserMixin):
   name = db.Column(db.String(255))
   external_id = db.Column(db.String(255))
   profile = db.Column(db.String(255))
-  oauth_token=db.Column(db.String(255))
-  oauth_token_secret=db.Column(db.String(255))
+  oauth = db.Column(MutableDict.as_mutable(JSONEncodedDict))
   queue = db.Column(db.String(255))
   picture = db.Column(db.String(32))
   points = db.Column(db.BigInteger)
   region = db.Column(db.String(3))
-  settings = db.Column(JSONEncodedDict())
   created_at = db.Column(db.DateTime, nullable=False, default=db.func.now())
 
   owned = db.relationship('Room', backref='owner')
@@ -80,12 +98,20 @@ class User(db.Model, ModelMixin, UserMixin):
   def to_array(self, for_public=False):
     data = super(User, self).to_array()
     if for_public:
-      data.pop('oauth_token', None)
-      data.pop('oauth_token_secret', None)
+      data.pop('oauth', None)
 
     data['mention'] = ''.join(word.capitalize() for word in slugify(self.name).split('-'))
 
     return data
+
+  def get_rdio_manager(self):
+    current_app.logger.debug(self.oauth)
+    rdio_manager = rdio.Api(current_app.config['RDIO_CLIENT_ID'],
+      current_app.config['RDIO_CLIENT_SECRET'],
+      self.oauth['access_token'],
+      self.oauth['refresh_token'])
+
+    return rdio_manager
 
   def get_queue_id(self):
     if self.queue:
@@ -96,10 +122,7 @@ class User(db.Model, ModelMixin, UserMixin):
       'user': self.external_id,
     };
 
-    rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-      current_app.config['RDIO_CONSUMER_SECRET'],
-      self.oauth_token,
-      self.oauth_token_secret)
+    rdio_manager = self.get_rdio_manager()
 
     try:
       results = rdio_manager.call_api_authenticated(data);
@@ -121,10 +144,7 @@ class User(db.Model, ModelMixin, UserMixin):
     return self.queue
 
   def get_queue(self):
-    rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-      current_app.config['RDIO_CONSUMER_SECRET'],
-      self.oauth_token,
-      self.oauth_token_secret)
+    rdio_manager = self.get_rdio_manager()
 
     queue_id = self.get_queue_id()
     if not queue_id:
@@ -165,10 +185,7 @@ class User(db.Model, ModelMixin, UserMixin):
     return queue
 
   def get_favorite_keys(self):
-    rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-      current_app.config['RDIO_CONSUMER_SECRET'],
-      self.oauth_token,
-      self.oauth_token_secret)
+    rdio_manager = self.get_rdio_manager()
 
     data = {
       'method': 'getKeysInFavorites',
@@ -187,10 +204,7 @@ class User(db.Model, ModelMixin, UserMixin):
     return response['keys']
 
   def get_favorites(self):
-    rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-      current_app.config['RDIO_CONSUMER_SECRET'],
-      self.oauth_token,
-      self.oauth_token_secret)
+    rdio_manager = self.get_rdio_manager()
 
     keys = self.get_favorite_keys()
     keys = [key for key in keys if not key.startswith('tp')]
