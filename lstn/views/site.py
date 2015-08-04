@@ -1,12 +1,16 @@
+import os
 import simplejson as json
 import hashlib
 import urllib, urllib2
-import rdio
+import lstn.rdio as rdio
 
 from flask import Flask, request, redirect, url_for, \
   render_template, Blueprint, current_app, session
 
 from flask.ext.login import login_required, current_user, login_user, logout_user
+
+from oauth2client.client import OAuth2WebServerFlow
+from base64 import b64encode
 
 from lstn import db, login_manager
 from lstn.exceptions import WebException
@@ -16,56 +20,48 @@ site = Blueprint('site', __name__)
 
 @site.route('/login')
 def login():
-  # TODO: Use CSRF here
-  state = {}
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'], current_app.config['RDIO_CONSUMER_SECRET'])
+  csrf_token = b64encode(os.urandom(24))
+  session['csrf_token'] = csrf_token
 
-  try:
-    auth = rdio_manager.get_token_and_login_url(url_for('site.auth', _external=True))
-  except Exception as e:
-    raise WebException('Unable to login: %s' % str(e), 500)
+  rdio_manager = rdio.Api(current_app.config['RDIO_CLIENT_ID'],
+      current_app.config['RDIO_CLIENT_SECRET'])
 
-  if not auth:
-    raise WebException('Unable to login', 500)
+  flow = rdio_manager.get_flow(current_app.config['BASE_URL'] + '/auth')
 
-  required = ['login_url', 'oauth_token', 'oauth_token_secret']
-  missing = [key for key in required if key not in auth]
-  if missing:
-    raise WebException('Unable to authenticate with Rdio', 500)
-
-  session['oauth_token_secret'] = auth['oauth_token_secret']
-
-  auth_url = "%s?oauth_token=%s" % (auth['login_url'], auth['oauth_token'])
+  auth_url = '%s&state=%s' % (flow.step1_get_authorize_url(), csrf_token)
   return redirect(auth_url)
 
 @site.route('/auth')
 def auth():
-  if 'oauth_verifier' not in request.args or 'oauth_token' not in request.args:
-    raise WebException('Missing authentication response from Rdio', 500)
+  session_csrf_token = session.pop('csrf_token', None)
+  csrf_token = request.args.get('state', None)
+  code = request.args.get('code')
 
-  if 'oauth_token_secret' not in session:
-    raise WebException('Missing required authentication token', 500)
+  if not session_csrf_token or not csrf_token:
+    raise WebException('Invalid CSRF Token')
 
-  request_token = {
-    'oauth_token': request.args['oauth_token'],
-    'oauth_token_secret': session['oauth_token_secret'],
-  }
+  if not code:
+    raise WebException('Invalid authentication code')
 
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'], current_app.config['RDIO_CONSUMER_SECRET'])
+  if csrf_token != session_csrf_token:
+    raise WebException('Invalid CSRF Token')
 
-  try:
-    auth = rdio_manager.authorize_with_verifier(request.args['oauth_verifier'], request_token)
-  except Exception as e:
-    raise WebException('Unable to authenticate: %s' % str(e), 500)
+  rdio_manager = rdio.Api(current_app.config['RDIO_CLIENT_ID'],
+      current_app.config['RDIO_CLIENT_SECRET'])
 
-  if not auth or 'oauth_token' not in auth or 'oauth_token_secret' not in auth:
-    raise WebException('Missing authentication response from Rdio', 500)
+  flow = rdio_manager.get_flow(current_app.config['BASE_URL'] + '/auth')
+
+  credentials = flow.step2_exchange(code)
+
+  rdio_manager.set_credentials(credentials)
 
   rdio_user = rdio_manager.current_user(['streamRegion'])
   if not rdio_user:
     raise WebException('Unable to retrieve user information from Rdio', 500)
 
   user = User.query.filter(User.external_id == rdio_user.key).first()
+
+  oauth = json.loads(credentials.to_json())
 
   if not user:
     user = User(
@@ -75,8 +71,7 @@ def auth():
       picture=rdio_user._data['icon250'],
       points=0,
       region=rdio_user._data['streamRegion'],
-      oauth_token=auth['oauth_token'],
-      oauth_token_secret=auth['oauth_token_secret'],
+      oauth=oauth
     )
     db.session.add(user)
     db.session.commit()
@@ -85,8 +80,7 @@ def auth():
     user.profile = rdio_user.url
     user.picture = rdio_user._data['icon250']
     user.region = rdio_user._data['streamRegion']
-    user.oauth_token = auth['oauth_token']
-    user.oauth_token_secret = auth['oauth_token_secret']
+    user.oauth = oauth
 
     db.session.commit()
 
