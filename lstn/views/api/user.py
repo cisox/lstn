@@ -1,5 +1,5 @@
 import simplejson as json
-import rdio
+import lstn.rdio as rdio
 
 from flask import Flask, request, redirect, url_for, \
   render_template, Blueprint, current_app, jsonify
@@ -69,10 +69,7 @@ def vote(user_id, direction):
 @user.route('/playlists', methods=['GET'])
 @login_required
 def get_playlists():
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   try:
     playlist_set = rdio_manager.get_playlists(['radioKey'])
@@ -100,10 +97,7 @@ def get_playlists():
 @user.route('/playlists/<list_type>', methods=['GET'])
 @login_required
 def get_playlist_type(list_type):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   if list_type not in ['owned', 'collab', 'favorites']:
     raise APIException('Invalid list type')
@@ -128,10 +122,7 @@ def get_playlist_type(list_type):
 @user.route('/stations/<station_type>', methods=['GET'])
 @login_required
 def get_station_type(station_type):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   methods = {
     'you': {
@@ -201,10 +192,7 @@ def update_queue():
   if not current_user.queue:
     raise APIException('Unable to set user queue', 500)
 
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   tracks = [track['key'] for track in request.json['queue']]
 
@@ -221,10 +209,7 @@ def clear_queue():
   if not current_user.queue:
     raise APIException('Unable to clear user queue', 500)
 
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   queue = current_user.get_queue()
   if queue:
@@ -239,10 +224,7 @@ def clear_queue():
   return jsonify(success=True)
 
 def bulk_add_queue():
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   queue_playlist = current_user.get_queue_id()
 
@@ -288,10 +270,7 @@ def user_queue_track(track_id):
   return delete_queue(track_id)
 
 def add_queue(track_id):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   queue_playlist = current_user.get_queue_id()
 
@@ -327,10 +306,7 @@ def delete_queue(track_id):
   if not current_user.queue:
     raise APIException('Unable to delete track from non-existant playlist')
 
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   index = request.args.get('index', 0)
   try:
@@ -351,10 +327,7 @@ def search():
   if len(query) < 3:
     return jsonify(success=True, data=[])
 
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   data = {
     'method': 'search',
@@ -391,10 +364,7 @@ def user_favorite_track(track_id):
   return delete_favorite(track_id)
 
 def add_favorite(track_id):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   data = {
     'method': 'addToFavorites',
@@ -410,10 +380,7 @@ def add_favorite(track_id):
   return jsonify(success=True)
 
 def delete_favorite(track_id):
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   data = {
     'method': 'removeFromFavorites',
@@ -431,10 +398,7 @@ def delete_favorite(track_id):
 @user.route('/collection', methods=['GET'])
 @login_required
 def user_collection():
-  rdio_manager = rdio.Api(current_app.config['RDIO_CONSUMER_KEY'],
-    current_app.config['RDIO_CONSUMER_SECRET'],
-    current_user.oauth_token,
-    current_user.oauth_token_secret)
+  rdio_manager = current_user.get_rdio_manager()
 
   data = {
     'method': 'getArtistsInCollection',
