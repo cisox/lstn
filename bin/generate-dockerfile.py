@@ -14,20 +14,11 @@ package_path      = path + '/../package.json'
 installs = ''
 
 # PIP
-allow_external = ['python-dateutil']
-allow_unverified = ['python-dateutil']
-
 requirements = open(requirements_path).read().splitlines()
 for requirement in requirements:
     name = requirement.split('==')[0]
 
     installs += 'RUN pip install '
-
-    if name in allow_external:
-        installs += '--allow-external %s ' % name
-
-    if name in allow_unverified:
-        installs += '--allow-unverified %s ' % name
 
     installs += "%s\n" % requirement
 
@@ -70,6 +61,7 @@ ADD config/nginx.conf /etc/nginx/sites-available/default
 
 ADD config/uwsgi.ini /etc/uwsgi.ini
 ADD config/supervisord.conf /etc/supervisor/supervisord.conf
+ADD config/redis.conf /etc/redis/redis.conf
 
 EXPOSE 80 443 7000 3000 6379
 CMD ["/usr/bin/supervisord"]
