@@ -39,7 +39,7 @@ RUN pip install oauth2==1.5.211
 RUN pip install oauth2client==1.4.6
 RUN pip install pyasn1==0.1.7
 RUN pip install pyasn1-modules==0.0.5
-RUN pip install --allow-external python-dateutil --allow-unverified python-dateutil python-dateutil==2.0
+RUN pip install python-dateutil==2.4.2
 RUN pip install python-rdio==0.6
 RUN pip install python-slugify==0.1.0
 RUN pip install pytz==2014.10
