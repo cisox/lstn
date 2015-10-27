@@ -19,7 +19,6 @@ oauth2client==1.4.6
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
 python-dateutil==2.4.2
-python-rdio==0.6
 python-slugify==0.1.0
 pytz==2014.10
 redis==2.10.3
