@@ -19,6 +19,7 @@ def get_tracks(station_id):
   data = {
     'method': 'generateStation',
     'station_key': station_id,
+    'count': 10,
     'extras': 'trackKeys,streamRegions,sampleUrl',
   }
 
